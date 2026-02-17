@@ -9,6 +9,10 @@ resource "aws_instance" "ecs_instance" {
 
   iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
 
+  # REQUIRED networking
+  subnet_id              = data.aws_subnets.default.ids[0]
+  vpc_security_group_ids = [aws_security_group.strapi_sg.id]
+
   user_data = <<EOF
 #!/bin/bash
 echo ECS_CLUSTER=${aws_ecs_cluster.strapi_cluster.name} >> /etc/ecs/ecs.config
