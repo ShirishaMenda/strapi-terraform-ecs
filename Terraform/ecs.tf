@@ -6,18 +6,15 @@ resource "aws_ecs_cluster" "strapi_cluster" {
 # Create Task Definition
 resource "aws_ecs_task_definition" "strapi_task" {
   family                   = "strapi-task"
-  requires_compatibilities = ["FARGATE"]
-  network_mode             = "awsvpc"
-  cpu                      = 256
-  memory                   = 512
-
-  execution_role_arn = "arn:aws:iam::811738710312:role/ec2-ecr-role"
+  requires_compatibilities = ["EC2"]
+  network_mode             = "bridge"
 
   container_definitions = jsonencode([
     {
       name  = "strapi"
       image = "${aws_ecr_repository.strapi_repo.repository_url}:latest"
-
+      cpu   = 256
+      memory = 512
       portMappings = [{
         containerPort = 1337
         protocol      = "tcp"
@@ -55,10 +52,4 @@ resource "aws_ecs_service" "strapi_service" {
   cluster         = aws_ecs_cluster.strapi_cluster.id
   task_definition = aws_ecs_task_definition.strapi_task.arn
   desired_count   = 1
-  launch_type     = "FARGATE"
-
-  network_configuration {
-    subnets          = data.aws_subnets.default.ids
-    assign_public_ip = true
-  }
 }

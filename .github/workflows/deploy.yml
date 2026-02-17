@@ -1,0 +1,36 @@
+name: Deploy Strapi Single EC2
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Configure AWS
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-east-1
+          role-to-assume: arn:aws:iam::811738710312:role/ec2-ecr-role
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build Docker image
+        run: docker build -t strapi .
+
+      - name: Tag image
+        run: docker tag strapi:latest ${{ secrets.ECR_URL }}:latest
+
+      - name: Push image
+        run: docker push ${{ secrets.ECR_URL }}:latest
+
+      - name: Terraform Apply
+        run: |
+          cd terraform
+          terraform init
+          terraform apply -auto-approve
