@@ -28,13 +28,13 @@ jobs:
       # Terraform Init
       - name: Terraform Init
         run: |
-          cd terraform
+          cd Terraform
           terraform init
 
       # Terraform Apply (Create ECR first)
       - name: Terraform Apply (Create Infra)
         run: |
-          cd terraform
+          cd Terraform
           terraform apply -auto-approve
 
       # Login to Amazon ECR
@@ -55,5 +55,5 @@ jobs:
       # Terraform Apply again (Update ECS Task)
       - name: Terraform Apply (Update Task)
         run: |
-          cd terraform
+          cd Terraform
           terraform apply -auto-approve
