@@ -8,13 +8,14 @@ resource "aws_ecs_task_definition" "strapi_task" {
   family                   = "strapi-task"
   requires_compatibilities = ["EC2"]
   network_mode             = "bridge"
+  cpu                      = "256"
+  memory                   = "512"
 
   container_definitions = jsonencode([
     {
       name  = "strapi"
       image = "${aws_ecr_repository.strapi_repo.repository_url}:latest"
-      cpu   = 256
-      memory = 512
+      essential = true
       portMappings = [{
         containerPort = 1337
         protocol      = "tcp"
