@@ -1,4 +1,3 @@
-# Get latest ECS-optimized Amazon Linux 2 AMI
 data "aws_ssm_parameter" "ecs_ami" {
   name = "/aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id"
 }
@@ -8,14 +7,12 @@ resource "aws_instance" "ecs_instance" {
   instance_type = "t3.micro"
 
   iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
-
-  # REQUIRED networking
-  subnet_id              = data.aws_subnets.default.ids[0]
+  subnet_id            = data.aws_subnets.default.ids[0]
   vpc_security_group_ids = [aws_security_group.strapi_sg.id]
 
   user_data = <<EOF
 #!/bin/bash
-echo ECS_CLUSTER=${aws_ecs_cluster.strapi_cluster.name} >> /etc/ecs/ecs.config
+echo ECS_CLUSTER=strapi-cluster >> /etc/ecs/ecs.config
 EOF
 
   tags = {
