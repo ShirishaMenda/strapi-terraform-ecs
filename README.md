@@ -1,61 +1,154 @@
-# 🚀 Getting started with Strapi
+# Deployed Strapi on AWS ECS (EC2) using Terraform & GitHub Actions
 
-Strapi comes with a full featured [Command Line Interface](https://docs.strapi.io/dev-docs/cli) (CLI) which lets you scaffold and manage your project in seconds.
 
-### `develop`
+# Prerequisites
 
-Start your Strapi application with autoReload enabled. [Learn more](https://docs.strapi.io/dev-docs/cli#strapi-develop)
+Before starting, ensure the following are available:
 
-```
-npm run develop
-# or
-yarn develop
-```
+AWS Account (Region: us-east-1 only)
 
-### `start`
+IAM Role provided
 
-Start your Strapi application with autoReload disabled. [Learn more](https://docs.strapi.io/dev-docs/cli#strapi-start)
+Role Name: ec2-ecr-role
 
-```
-npm run start
-# or
-yarn start
-```
+Role ARN: arn:aws:iam::811738710312:role/ec2-ecr-role
 
-### `build`
+Instance Profile ARN: arn:aws:iam::811738710312:instance-profile/ec2-ecr-role
 
-Build your admin panel. [Learn more](https://docs.strapi.io/dev-docs/cli#strapi-build)
+GitHub repository
 
-```
-npm run build
-# or
-yarn build
-```
+AWS Access Key & Secret added to GitHub Secrets
 
-## ⚙️ Deployment
+Docker & Node.js installed locally
 
-Strapi gives you many possible deployment options for your project including [Strapi Cloud](https://cloud.strapi.io). Browse the [deployment section of the documentation](https://docs.strapi.io/dev-docs/deployment) to find the best solution for your use case.
 
-```
-yarn strapi deploy
-```
+# Step 1: Create Strapi Application
 
-## 📚 Learn more
+mkdir strapi-ecs
+cd strapi-ecs
+npx create-strapi-app . --quickstart
 
-- [Resource center](https://strapi.io/resource-center) - Strapi resource center.
-- [Strapi documentation](https://docs.strapi.io) - Official Strapi documentation.
-- [Strapi tutorials](https://strapi.io/tutorials) - List of tutorials made by the core team and the community.
-- [Strapi blog](https://strapi.io/blog) - Official Strapi blog containing articles made by the Strapi team and the community.
-- [Changelog](https://strapi.io/changelog) - Find out about the Strapi product updates, new features and general improvements.
 
-Feel free to check out the [Strapi GitHub repository](https://github.com/strapi/strapi). Your feedback and contributions are welcome!
 
-## ✨ Community
+# Step 2: Configure Database for PostgreSQL (RDS)
 
-- [Discord](https://discord.strapi.io) - Come chat with the Strapi community including the core team.
-- [Forum](https://forum.strapi.io/) - Place to discuss, ask questions and find answers, show your Strapi project and get feedback or just talk with other Community members.
-- [Awesome Strapi](https://github.com/strapi/awesome-strapi) - A curated list of awesome things related to Strapi.
+Strapi v4 uses TypeScript config.
 
----
+Edit file:
 
-<sub>🤫 Psst! [Strapi is hiring](https://strapi.io/careers).</sub>
+config/database.ts
+
+
+Update it to use environment variables:
+
+export default ({ env }) => ({
+  connection: {
+    client: 'postgres',
+    connection: {
+      host: env('DATABASE_HOST'),
+      port: env.int('DATABASE_PORT', 5432),
+      database: env('DATABASE_NAME'),
+      user: env('DATABASE_USERNAME'),
+      password: env('DATABASE_PASSWORD'),
+      ssl: false,
+    },
+  },
+});
+
+
+
+Allows Strapi to connect to AWS RDS
+
+
+
+# Step 3: Create Dockerfile
+
+Create a file named Dockerfile in project root.
+
+The Dockerfile builds the app, installs dependencies, and exposes port 1337.
+
+
+
+# Step 4: Create Terraform Folder Structure
+
+Create Terraform directory:
+
+mkdir terraform
+
+
+That Terraform manages
+
+ECR Repository
+
+ECS Cluster (EC2)
+
+ECS Task Definition
+
+ECS Service
+
+EC2 Instance
+
+RDS PostgreSQL
+
+Security Groups
+
+IAM role attachment
+
+All infrastructure is created only via Terraform.
+
+
+
+# Step 5: Create GitHub Actions Workflow
+
+Workflow does the following on every push to main:
+
+Checkout source code
+
+Configure AWS credentials
+
+Run Terraform init & apply
+
+Create ECR repository (if not exists)
+
+Login to ECR
+
+Build Docker image
+
+Tag image as latest
+
+Push image to ECR
+
+Re-apply Terraform to update ECS task revision
+
+
+
+# Step 6: Push Code to GitHub
+git init
+git add .
+git commit -m "Deploy Strapi on ECS EC2 using Terraform"
+git branch -M main
+git push origin main
+
+
+
+# Step 7: Verify ECS & EC2
+
+In AWS Console:
+
+ECS Cluster → Service → Task should be RUNNING
+
+EC2 instance should be healthy
+
+RDS instance should be available
+
+Ensure EC2 security group allows:
+
+Inbound: TCP 1337 from 0.0.0.0/0
+
+
+
+# Step 8: Access Strapi Admin Page
+
+Get EC2 Public IP and open browser:
+
+http://<EC2_PUBLIC_IP>:1337/admin
