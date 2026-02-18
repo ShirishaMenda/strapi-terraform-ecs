@@ -1,7 +1,7 @@
 {
   "version": 4,
   "terraform_version": "1.12.2",
-  "serial": 142,
+  "serial": 131,
   "lineage": "c096e63d-cc05-ca6b-7f49-ff2cbe7b7c28",
   "outputs": {
     "alb_dns": {
@@ -9,7 +9,7 @@
       "type": "string"
     },
     "ecr_repo_url": {
-      "value": "811738710312.dkr.ecr.us-east-1.amazonaws.com/new-strapi-app",
+      "value": "811738710312.dkr.ecr.us-east-1.amazonaws.com/strapi-app",
       "type": "string"
     }
   },
@@ -66,7 +66,7 @@
             "instance_class": "db.t3.micro",
             "iops": 0,
             "kms_key_id": "",
-            "latest_restorable_time": "2026-02-18T12:15:48Z",
+            "latest_restorable_time": "2026-02-18T12:00:48Z",
             "license_model": "postgresql-license",
             "listener_endpoint": [],
             "maintenance_window": "fri:07:08-fri:07:38",
@@ -188,7 +188,7 @@
         {
           "schema_version": 0,
           "attributes": {
-            "arn": "arn:aws:ecr:us-east-1:811738710312:repository/new-strapi-app",
+            "arn": "arn:aws:ecr:us-east-1:811738710312:repository/strapi-app",
             "encryption_configuration": [
               {
                 "encryption_type": "AES256",
@@ -196,17 +196,17 @@
               }
             ],
             "force_delete": null,
-            "id": "new-strapi-app",
+            "id": "strapi-app",
             "image_scanning_configuration": [
               {
                 "scan_on_push": false
               }
             ],
             "image_tag_mutability": "MUTABLE",
-            "name": "new-strapi-app",
+            "name": "strapi-app",
             "registry_id": "811738710312",
-            "repository_url": "811738710312.dkr.ecr.us-east-1.amazonaws.com/new-strapi-app",
-            "tags": {},
+            "repository_url": "811738710312.dkr.ecr.us-east-1.amazonaws.com/strapi-app",
+            "tags": null,
             "tags_all": {},
             "timeouts": null
           },
@@ -247,102 +247,6 @@
     },
     {
       "mode": "managed",
-      "type": "aws_ecs_service",
-      "name": "service",
-      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
-      "instances": [
-        {
-          "schema_version": 1,
-          "attributes": {
-            "alarms": [],
-            "availability_zone_rebalancing": "DISABLED",
-            "capacity_provider_strategy": [],
-            "cluster": "arn:aws:ecs:us-east-1:811738710312:cluster/strapi-cluster",
-            "deployment_circuit_breaker": [
-              {
-                "enable": false,
-                "rollback": false
-              }
-            ],
-            "deployment_controller": [
-              {
-                "type": "ECS"
-              }
-            ],
-            "deployment_maximum_percent": 200,
-            "deployment_minimum_healthy_percent": 100,
-            "desired_count": 1,
-            "enable_ecs_managed_tags": false,
-            "enable_execute_command": false,
-            "force_delete": null,
-            "force_new_deployment": null,
-            "health_check_grace_period_seconds": 60,
-            "iam_role": "/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS",
-            "id": "arn:aws:ecs:us-east-1:811738710312:service/strapi-cluster/strapi-service",
-            "launch_type": "FARGATE",
-            "load_balancer": [
-              {
-                "container_name": "strapi",
-                "container_port": 1337,
-                "elb_name": "",
-                "target_group_arn": "arn:aws:elasticloadbalancing:us-east-1:811738710312:targetgroup/strapi-tg-siri/72a28ed003a29505"
-              }
-            ],
-            "name": "strapi-service",
-            "network_configuration": [
-              {
-                "assign_public_ip": false,
-                "security_groups": [
-                  "sg-05e1f2096fa4716c3"
-                ],
-                "subnets": [
-                  "subnet-0087031461d446893",
-                  "subnet-0a729437298fda0a2"
-                ]
-              }
-            ],
-            "ordered_placement_strategy": [],
-            "placement_constraints": [],
-            "platform_version": "LATEST",
-            "propagate_tags": "NONE",
-            "scheduling_strategy": "REPLICA",
-            "service_connect_configuration": [],
-            "service_registries": [],
-            "tags": {},
-            "tags_all": {},
-            "task_definition": "arn:aws:ecs:us-east-1:811738710312:task-definition/strapi-task:29",
-            "timeouts": null,
-            "triggers": {},
-            "volume_configuration": [],
-            "vpc_lattice_configurations": [],
-            "wait_for_steady_state": false
-          },
-          "sensitive_attributes": [],
-          "identity_schema_version": 0,
-          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMSJ9",
-          "dependencies": [
-            "aws_db_instance.strapi_db",
-            "aws_db_subnet_group.rds_subnet_group",
-            "aws_ecr_repository.repo",
-            "aws_ecs_cluster.cluster",
-            "aws_ecs_task_definition.task",
-            "aws_lb.alb",
-            "aws_lb_listener.listener",
-            "aws_lb_target_group.tg",
-            "aws_security_group.alb_sg",
-            "aws_security_group.ecs_sg",
-            "aws_security_group.rds_sg",
-            "aws_subnet.private_a",
-            "aws_subnet.private_b",
-            "aws_subnet.public",
-            "aws_subnet.public_b",
-            "aws_vpc.main"
-          ]
-        }
-      ]
-    },
-    {
-      "mode": "managed",
       "type": "aws_ecs_task_definition",
       "name": "task",
       "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
@@ -350,9 +254,9 @@
         {
           "schema_version": 1,
           "attributes": {
-            "arn": "arn:aws:ecs:us-east-1:811738710312:task-definition/strapi-task:29",
+            "arn": "arn:aws:ecs:us-east-1:811738710312:task-definition/strapi-task:27",
             "arn_without_revision": "arn:aws:ecs:us-east-1:811738710312:task-definition/strapi-task",
-            "container_definitions": "[{\"environment\":[{\"name\":\"DATABASE_CLIENT\",\"value\":\"postgres\"},{\"name\":\"DATABASE_HOST\",\"value\":\"strapi-db.cibg8qw2kouc.us-east-1.rds.amazonaws.com\"},{\"name\":\"DATABASE_NAME\",\"value\":\"strapidb\"},{\"name\":\"DATABASE_PASSWORD\",\"value\":\"Strapi_12345\"},{\"name\":\"DATABASE_PORT\",\"value\":\"5432\"},{\"name\":\"DATABASE_USERNAME\",\"value\":\"strapiadmin\"},{\"name\":\"HOST\",\"value\":\"0.0.0.0\"},{\"name\":\"PORT\",\"value\":\"1337\"}],\"essential\":true,\"image\":\"811738710312.dkr.ecr.us-east-1.amazonaws.com/new-strapi-app:latest\",\"mountPoints\":[],\"name\":\"strapi\",\"portMappings\":[{\"containerPort\":1337,\"hostPort\":1337,\"protocol\":\"tcp\"}],\"systemControls\":[],\"volumesFrom\":[]}]",
+            "container_definitions": "[{\"environment\":[{\"name\":\"DATABASE_CLIENT\",\"value\":\"postgres\"},{\"name\":\"DATABASE_HOST\",\"value\":\"strapi-db.cibg8qw2kouc.us-east-1.rds.amazonaws.com\"},{\"name\":\"DATABASE_NAME\",\"value\":\"strapidb\"},{\"name\":\"DATABASE_PASSWORD\",\"value\":\"Strapi_12345\"},{\"name\":\"DATABASE_PORT\",\"value\":\"5432\"},{\"name\":\"DATABASE_USERNAME\",\"value\":\"strapiadmin\"},{\"name\":\"HOST\",\"value\":\"0.0.0.0\"},{\"name\":\"PORT\",\"value\":\"1337\"}],\"essential\":true,\"image\":\"811738710312.dkr.ecr.us-east-1.amazonaws.com/strapi-app:latest\",\"mountPoints\":[],\"name\":\"strapi\",\"portMappings\":[{\"containerPort\":1337,\"hostPort\":1337,\"protocol\":\"tcp\"}],\"systemControls\":[],\"volumesFrom\":[]}]",
             "cpu": "512",
             "enable_fault_injection": false,
             "ephemeral_storage": [],
@@ -369,10 +273,10 @@
             "requires_compatibilities": [
               "FARGATE"
             ],
-            "revision": 29,
+            "revision": 27,
             "runtime_platform": [],
             "skip_destroy": false,
-            "tags": {},
+            "tags": null,
             "tags_all": {},
             "task_role_arn": "arn:aws:iam::811738710312:role/ecs_fargate_taskRole",
             "track_latest": false,
