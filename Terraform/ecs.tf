@@ -1,9 +1,3 @@
-# Create ECS Cluster
-resource "aws_ecs_cluster" "strapi_cluster" {
-  name = "strapi-cluster"
-}
-
-# Create ECS Task Definition
 resource "aws_ecs_task_definition" "strapi_task" {
   family                   = "strapi-task"
   requires_compatibilities = ["EC2"]
@@ -11,13 +5,14 @@ resource "aws_ecs_task_definition" "strapi_task" {
   cpu                      = "256"
   memory                   = "512"
 
+  execution_role_arn = "arn:aws:iam::138383657644:role/ec2-ecr-role"
+
   container_definitions = jsonencode([
     {
       name      = "strapi"
       image     = "${aws_ecr_repository.strapi_repo.repository_url}:latest"
       essential = true
 
-      # ✅ PORT EXPOSURE (MANDATORY)
       portMappings = [
         {
           containerPort = 1337
@@ -26,7 +21,6 @@ resource "aws_ecs_task_definition" "strapi_task" {
         }
       ]
 
-      # ✅ REQUIRED ENV VARIABLES
       environment = [
         { name = "HOST", value = "0.0.0.0" },
         { name = "PORT", value = "1337" },
@@ -38,7 +32,6 @@ resource "aws_ecs_task_definition" "strapi_task" {
         { name = "DATABASE_PASSWORD", value = "StrapiPass123" }
       ]
 
-      # ✅ CLOUDWATCH LOGS (THIS WAS MISSING)
       logConfiguration = {
         logDriver = "awslogs"
         options = {
@@ -49,26 +42,4 @@ resource "aws_ecs_task_definition" "strapi_task" {
       }
     }
   ])
-}
-
-# Create ECS Service
-resource "aws_ecs_service" "strapi_service" {
-  name            = "strapi-service"
-  cluster         = aws_ecs_cluster.strapi_cluster.id
-  task_definition = aws_ecs_task_definition.strapi_task.arn
-  desired_count   = 1
-  launch_type     = "EC2"
-
-  force_new_deployment = true
-
-  depends_on = [
-    aws_ecs_cluster.strapi_cluster,
-    aws_ecs_task_definition.strapi_task
-  ]
-
-  lifecycle {
-    ignore_changes = [
-      task_definition
-    ]
-  }
 }
