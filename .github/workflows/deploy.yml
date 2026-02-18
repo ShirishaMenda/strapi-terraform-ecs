@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+permissions:
+  id-token: write     # REQUIRED
+  contents: read
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -12,11 +16,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Configure AWS
+      - name: Configure AWS (OIDC)
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-region: us-east-1
-          role-to-assume: arn:aws:iam::811738710312:role/ecs_fargate_taskRole
+          role-to-assume: arn:aws:iam::811738710312:role/github-actions-ecs-role
 
       - name: Login to ECR
         run: |
