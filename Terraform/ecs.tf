@@ -3,7 +3,7 @@ resource "aws_ecs_cluster" "strapi_cluster" {
   name = "strapi-cluster"
 }
 
-# Create Task Definition
+# Create ECS Task Definition
 resource "aws_ecs_task_definition" "strapi_task" {
   family                   = "strapi-task"
   requires_compatibilities = ["EC2"]
@@ -13,37 +13,40 @@ resource "aws_ecs_task_definition" "strapi_task" {
 
   container_definitions = jsonencode([
     {
-      name  = "strapi"
-      image = "${aws_ecr_repository.strapi_repo.repository_url}:latest"
+      name      = "strapi"
+      image     = "${aws_ecr_repository.strapi_repo.repository_url}:latest"
       essential = true
-      portMappings = [{
-        containerPort = 1337
-        hostPort      = 1337
-        protocol      = "tcp"
-      }]
 
-      environment = [
+      # ✅ PORT EXPOSURE (MANDATORY)
+      portMappings = [
         {
-          name  = "DATABASE_HOST"
-          value = aws_db_instance.strapi_db.address
-        },
-        {
-          name  = "DATABASE_PORT"
-          value = "5432"
-        },
-        {
-          name  = "DATABASE_NAME"
-          value = "strapidb"
-        },
-        {
-          name  = "DATABASE_USERNAME"
-          value = "strapiuser"
-        },
-        {
-          name  = "DATABASE_PASSWORD"
-          value = "StrapiPass123"
+          containerPort = 1337
+          hostPort      = 1337
+          protocol      = "tcp"
         }
       ]
+
+      # ✅ REQUIRED ENV VARIABLES
+      environment = [
+        { name = "HOST", value = "0.0.0.0" },
+        { name = "PORT", value = "1337" },
+
+        { name = "DATABASE_HOST", value = aws_db_instance.strapi_db.address },
+        { name = "DATABASE_PORT", value = "5432" },
+        { name = "DATABASE_NAME", value = "strapidb" },
+        { name = "DATABASE_USERNAME", value = "strapiuser" },
+        { name = "DATABASE_PASSWORD", value = "StrapiPass123" }
+      ]
+
+      # ✅ CLOUDWATCH LOGS (THIS WAS MISSING)
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          awslogs-group         = "/ecs/strapi"
+          awslogs-region        = "us-east-1"
+          awslogs-stream-prefix = "ecs"
+        }
+      }
     }
   ])
 }
