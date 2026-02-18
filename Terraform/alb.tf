@@ -13,7 +13,7 @@ resource "aws_lb_target_group" "tg" {
   target_type = "ip"
 
   health_check {
-    path                = "/"
+    path                = "/admin"
     protocol            = "HTTP"
     port                = "traffic-port"
     healthy_threshold   = 3
