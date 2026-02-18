@@ -26,9 +26,9 @@ jobs:
 
       - name: Build and Push
         run: |
-          docker build -t strapi-repo .
-          docker tag strapi-repo:latest 811738710312.dkr.ecr.us-east-1.amazonaws.com/strapi-repo:latest
-          docker push 811738710312.dkr.ecr.us-east-1.amazonaws.com/strapi-repo:latest
+          docker build -t new-strapi-app .
+          docker tag strapi-repo:latest 811738710312.dkr.ecr.us-east-1.amazonaws.com/new-strapi-app:latest
+          docker push 811738710312.dkr.ecr.us-east-1.amazonaws.com/new-strapi-app:latest
 
       - name: Force ECS Deployment
         run: |
