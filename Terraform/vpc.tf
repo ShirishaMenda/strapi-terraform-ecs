@@ -39,3 +39,29 @@ resource "aws_route_table_association" "public_b_assoc" {
   subnet_id      = aws_subnet.public_b.id
   route_table_id = aws_route_table.public_rt.id
 }
+
+resource "aws_subnet" "private_a" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.3.0/24"
+  availability_zone = "us-east-1a"
+}
+
+resource "aws_subnet" "private_b" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.4.0/24"
+  availability_zone = "us-east-1b"
+}
+
+
+resource "aws_db_subnet_group" "rds_subnet_group" {
+  name = "strapi-rds-subnet-group"
+
+  subnet_ids = [
+    aws_subnet.private_a.id,
+    aws_subnet.private_b.id
+  ]
+
+  tags = {
+    Name = "strapi-rds-subnet-group"
+  }
+}
