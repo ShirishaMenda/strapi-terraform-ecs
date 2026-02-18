@@ -19,7 +19,6 @@ resource "aws_ecs_task_definition" "task" {
       portMappings = [
         {
           containerPort = 1337
-          hostPort      = 1337
         }
       ]
 
@@ -39,8 +38,8 @@ resource "aws_ecs_service" "service" {
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets         = [aws_subnet.public.id,aws_subnet.public_b.id]
-    security_groups = [aws_security_group.ecs_sg.id]
+    subnets          = [aws_subnet.public.id, aws_subnet.public_b.id]
+    security_groups  = [aws_security_group.ecs_sg.id]
     assign_public_ip = true
   }
 
@@ -49,6 +48,8 @@ resource "aws_ecs_service" "service" {
     container_name   = "strapi"
     container_port   = 1337
   }
+
+  health_check_grace_period_seconds = 60
 
   depends_on = [aws_lb_listener.listener]
 }
