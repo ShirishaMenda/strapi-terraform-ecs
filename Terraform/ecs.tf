@@ -34,7 +34,7 @@ resource "aws_ecs_task_definition" "task" {
         { name = "DATABASE_PORT", value = "5432" },
         { name = "DATABASE_NAME", value = "strapidb" },
         { name = "DATABASE_USERNAME", value = "strapiadmin" },
-        { name = "DATABASE_PASSWORD", value = "Strapi@12345" }
+        { name = "DATABASE_PASSWORD", value = "Strapi_12345" }
       ]
     }
   ])
