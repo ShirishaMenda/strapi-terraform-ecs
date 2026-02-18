@@ -18,6 +18,7 @@ resource "aws_ecs_task_definition" "strapi_task" {
       essential = true
       portMappings = [{
         containerPort = 1337
+        hostPort      = 1337
         protocol      = "tcp"
       }]
 
