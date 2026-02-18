@@ -1,59 +1,37 @@
-name: Deploy Strapi Single EC2
+name: Deploy Strapi
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout code
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      # Configure AWS credentials
-      - name: Configure AWS Credentials
+      - name: Configure AWS
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
+          role-to-assume: arn:aws:iam::811738710312:role/ecs_fargate_taskRole
 
-      # Setup Terraform
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-
-      # Terraform Init
-      - name: Terraform Init
+      - name: Login to ECR
         run: |
-          cd Terraform
-          terraform init
+          aws ecr get-login-password --region us-east-1 \
+          | docker login --username AWS --password-stdin 811738710312.dkr.ecr.us-east-1.amazonaws.com
 
-      # Terraform Apply (Create ECR first)
-      - name: Terraform Apply (Create Infra)
+      - name: Build and Push
         run: |
-          cd Terraform
-          terraform apply -auto-approve
+          docker build -t strapi-repo .
+          docker tag strapi-repo:latest 811738710312.dkr.ecr.us-east-1.amazonaws.com/strapi-repo:latest
+          docker push 811738710312.dkr.ecr.us-east-1.amazonaws.com/strapi-repo:latest
 
-      # Login to Amazon ECR
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
-
-      # Build and Push Docker Image
-      - name: Build and Push Docker Image
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: strapi-repo
-          IMAGE_TAG: latest
+      - name: Force ECS Deployment
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-
-      # Terraform Apply again (Update ECS Task)
-      - name: Terraform Apply (Update Task)
-        run: |
-          cd Terraform
-          terraform apply -auto-approve
+          aws ecs update-service \
+            --cluster strapi-cluster \
+            --service strapi-service \
+            --force-new-deployment
