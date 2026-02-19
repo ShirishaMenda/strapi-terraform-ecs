@@ -1,154 +1,196 @@
-# Deployed Strapi on AWS ECS (EC2) using Terraform & GitHub Actions
+# Deploy Strapi on AWS ECS Fargate using Terraform & GitHub Actions
 
 
-# Prerequisites
+# The workflow consists of:
 
-Before starting, ensure the following are available:
+Creating a Strapi application
 
-AWS Account (Region: us-east-1 only)
+Writing Terraform configuration for AWS infrastructure
 
-IAM Role provided
+Deploying infrastructure with Terraform
 
-Role Name: ec2-ecr-role
+Pushing code to GitHub to trigger CI/CD
 
-Role ARN: arn:aws:iam::811738710312:role/ec2-ecr-role
+GitHub Actions builds the Strapi Docker image
 
-Instance Profile ARN: arn:aws:iam::811738710312:instance-profile/ec2-ecr-role
+GitHub Actions pushes the image to Amazon ECR
 
-GitHub repository
+GitHub Actions updates the ECS task definition
 
-AWS Access Key & Secret added to GitHub Secrets
-
-Docker & Node.js installed locally
-
-
-# Step 1: Create Strapi Application
-
-mkdir strapi-ecs
-cd strapi-ecs
-npx create-strapi-app . --quickstart
+ECS Fargate deploys the new revision automatically
 
 
 
-# Step 2: Configure Database for PostgreSQL (RDS)
+# 1. Create the Strapi Application
 
-Strapi v4 uses TypeScript config.
-
-Edit file:
-
-config/database.ts
+npx create-strapi-app@latest my-strapi-app
 
 
-Update it to use environment variables:
+# 2. Prepare Terraform Configuration
 
-export default ({ env }) => ({
-  connection: {
-    client: 'postgres',
-    connection: {
-      host: env('DATABASE_HOST'),
-      port: env.int('DATABASE_PORT', 5432),
-      database: env('DATABASE_NAME'),
-      user: env('DATABASE_USERNAME'),
-      password: env('DATABASE_PASSWORD'),
-      ssl: false,
-    },
-  },
-});
+Terraform is used to create:
 
+VPC with public and private subnets,NAT Gateway
 
+Security groups
 
-Allows Strapi to connect to AWS RDS
+ECS Cluster
 
+ECS Task Definition (Fargate)
 
+ECS Service with Load Balancer
 
-# Step 3: Create Dockerfile
+IAM Roles required for ECS + GitHub Actions
 
-Create a file named Dockerfile in project root.
+Amazon RDS PostgreSQL
 
-The Dockerfile builds the app, installs dependencies, and exposes port 1337.
+Amazon ECR Repository
 
+ALB Target Group + Listener
 
+Strapi uses RDS PostgreSQL as its main database.
 
-# Step 4: Create Terraform Folder Structure
+You will store:
 
-Create Terraform directory:
+Terraform files
 
-mkdir terraform
+Dockerfile
 
+GitHub Actions workflow
 
-That Terraform manages
+Task Definition template
 
-ECR Repository
-
-ECS Cluster (EC2)
-
-ECS Task Definition
-
-ECS Service
-
-EC2 Instance
-
-RDS PostgreSQL
-
-Security Groups
-
-IAM role attachment
-
-All infrastructure is created only via Terraform.
+Inside your repository.
 
 
 
-# Step 5: Create GitHub Actions Workflow
+# 3. Configure GitHub Secrets
 
-Workflow does the following on every push to main:
+The CI/CD pipeline requires AWS credentials and environment configuration.
 
-Checkout source code
+Create these keys:
 
-Configure AWS credentials
-
-Run Terraform init & apply
-
-Create ECR repository (if not exists)
-
-Login to ECR
-
-Build Docker image
-
-Tag image as latest
-
-Push image to ECR
-
-Re-apply Terraform to update ECS task revision
+Secret Key	Description
+AWS_ACCESS_KEY_ID	IAM access key for GitHub Actions
+AWS_SECRET_ACCESS_KEY	IAM secret key
+AWS_REGION	Set to us-east-1
+ECR_REPOSITORY	Name of your ECR repo
+CLUSTER_NAME	Your ECS cluster name
+SERVICE_NAME	Your ECS service name
 
 
 
-# Step 6: Push Code to GitHub
+# 4. Initialize Terraform (Locally)
+
+Before GitHub Actions can deploy Strapi, AWS infrastructure must already exist.
+
+Run these commands inside the Terraform folder:
+
+terraform init
+terraform validate
+terraform plan
+
+
+
+# 5. Deploy AWS Infrastructure Using Terraform
+
+Apply infrastructure the first time locally:
+
+terraform apply -auto-approve
+
+
+This will:
+
+Create networking
+
+Create RDS PostgreSQL
+
+Create ECR repository
+
+Create IAM roles
+
+Create ECS cluster/service
+
+Create ALB
+
+Create and register the initial ECS task definition
+
+Once done, your AWS environment is live and ready to receive the Strapi container image.
+
+
+# 6. Push Code to GitHub to Trigger CI/CD
+
+After Terraform is applied:
+
 git init
 git add .
-git commit -m "Deploy Strapi on ECS EC2 using Terraform"
+git commit -m "Initial Strapi AWS Deployment"
 git branch -M main
-git push origin main
+git remote add origin <YOUR_GITHUB_REPO_URL>
+git push -u origin main
+
+
+Pushing the code triggers the GitHub Actions workflow.
+
+
+# 7. How the GitHub Actions Workflow Works
+
+Your workflow:
+
+Logs in to Amazon ECR
+
+Builds the Strapi Docker image
+
+Tags the image using:
+
+latest
+
+Git commit SHA
+
+Pushes image to ECR
+
+Generates a new ECS task definition with the updated image tag
+
+Registers the new task definition revision
+
+Forces a new ECS deployment using:
+
+updated image
+
+same environment variables
+
+Waits for service stabilization
+
+This automates your entire deployment pipeline.
 
 
 
-# Step 7: Verify ECS & EC2
+# 8. Access Your Strapi Application
 
-In AWS Console:
+After deployment, the workflow outputs:
 
-ECS Cluster → Service → Task should be RUNNING
+Load Balancer DNS
 
-EC2 instance should be healthy
+ECS service status
 
-RDS instance should be available
-
-Ensure EC2 security group allows:
-
-Inbound: TCP 1337 from 0.0.0.0/0
+Open the ALB DNS name in a browser to access Strapi.
 
 
 
-# Step 8: Access Strapi Admin Page
+# 9. Future Deployments
 
-Get EC2 Public IP and open browser:
+Once infrastructure is created:
 
-http://<EC2_PUBLIC_IP>:1337/admin
+You never run Terraform manually again
+
+You simply push code changes
+
+GitHub Actions will:
+
+Rebuild the Docker image
+
+Push the image to ECR
+
+Deploy the new version to ECS
+
+This forms a complete CI/CD pipeline.
